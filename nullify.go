@@ -131,10 +131,7 @@ func ptr(t reflect.Type, cfg config) reflect.Type {
 		return reflect.PointerTo(reflect.StructOf(structFields))
 	case reflect.Array:
 		if cfg.bytesAsString && (t.Elem().Kind() == reflect.Uint8 || (t.Elem().Kind() == reflect.Pointer && t.Elem().Elem().Kind() == reflect.Uint8)) {
-			elemType := reflect.TypeOf("")
-			if cfg.nullifyArrayElem {
-				elemType = reflect.PointerTo(elemType)
-			}
+			elemType := reflect.PointerTo(reflect.TypeOf(""))
 			return elemType
 		}
 
