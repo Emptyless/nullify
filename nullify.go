@@ -1,6 +1,7 @@
 package nullify
 
 import (
+	"encoding/json"
 	"reflect"
 )
 
@@ -28,11 +29,13 @@ func Nullify(obj any, options ...option) any {
 
 	// default config
 	cfg := config{
-		bytesAsString:    false,
-		nullifyArrayElem: true,
-		nullifySliceElem: true,
-		nullifyMapElem:   true,
-		nullifyMapKey:    true,
+		bytesAsString:        false,
+		nullifyArrayElem:     true,
+		nullifySliceElem:     true,
+		nullifyMapElem:       true,
+		nullifyMapKey:        true,
+		nullifyMarshalJson:   false,
+		nullifyUnmarshalJson: false,
 	}
 
 	// process options
@@ -52,15 +55,19 @@ var JsonOptions = []option{
 	NullifyMapElem{Value: false},
 	NullifySliceElem{Value: false},
 	NullifyArrayElem{Value: false},
+	NullifyMarshalJson{Value: true},
+	NullifyUnmarshalJson{Value: true},
 }
 
 // config determines the behavior of the ptr function
 type config struct {
-	bytesAsString    bool
-	nullifyArrayElem bool
-	nullifySliceElem bool
-	nullifyMapElem   bool
-	nullifyMapKey    bool
+	bytesAsString        bool
+	nullifyArrayElem     bool
+	nullifySliceElem     bool
+	nullifyMapElem       bool
+	nullifyMapKey        bool
+	nullifyMarshalJson   bool
+	nullifyUnmarshalJson bool
 }
 
 // option functionally updates the ptr function
@@ -119,8 +126,42 @@ func (o NullifyMapKey) update(cfg config) config {
 	return cfg
 }
 
+// NullifyMarshalJson if true (default false) nullifies elements which implement the json.Marshaller interface
+type NullifyMarshalJson struct {
+	Value bool
+}
+
+func (o NullifyMarshalJson) update(cfg config) config {
+	cfg.nullifyMapKey = o.Value
+	return cfg
+}
+
+// NullifyUnmarshalJson if true (default false) nullifies elements which implement the json.Unmarshaller interface
+type NullifyUnmarshalJson struct {
+	Value bool
+}
+
+func (o NullifyUnmarshalJson) update(cfg config) config {
+	cfg.nullifyUnmarshalJson = o.Value
+	return cfg
+}
+
+// jsonMarshaler json.Marshaler type
+var jsonMarshaler = reflect.TypeOf((*json.Marshaler)(nil)).Elem()
+
+// jsonUnmarshaler json.Unmarshaler type
+var jsonUnmarshaler = reflect.TypeOf((*json.Marshaler)(nil)).Elem()
+
 // ptr recursively transforms the `reflect.Type` to a pointer kind.
 func ptr(t reflect.Type, cfg config) reflect.Type {
+	if !cfg.nullifyMarshalJson && t.Implements(jsonMarshaler) {
+		return reflect.PointerTo(t)
+	}
+
+	if !cfg.nullifyUnmarshalJson && t.Implements(jsonUnmarshaler) {
+		return reflect.PointerTo(t)
+	}
+
 	switch t.Kind() {
 	case reflect.Struct:
 		structFields := make([]reflect.StructField, t.NumField())

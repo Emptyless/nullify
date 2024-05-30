@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+	"time"
 	"unsafe"
 )
 
@@ -76,7 +77,8 @@ func TestNullify_Map(t *testing.T) {
 	// Assert
 	assert.Equal(t, reflect.Pointer, reflect.TypeOf(i).Kind())
 	assert.Equal(t, reflect.Map, reflect.TypeOf(i).Elem().Kind())
-	assert.Equal(t, reflect.String, reflect.TypeOf(i).Elem().Key().Kind())
+	assert.Equal(t, reflect.Pointer, reflect.TypeOf(i).Elem().Key().Kind())
+	assert.Equal(t, reflect.String, reflect.TypeOf(i).Elem().Key().Elem().Kind())
 	assert.Equal(t, reflect.Pointer, reflect.TypeOf(i).Elem().Elem().Kind())
 	assert.Equal(t, reflect.Int, reflect.TypeOf(i).Elem().Elem().Elem().Kind())
 }
@@ -129,6 +131,18 @@ func TestNullify_Pointer(t *testing.T) {
 	// Assert
 	assert.Equal(t, reflect.Pointer, reflect.TypeOf(i).Kind())
 	assert.Equal(t, reflect.String, reflect.TypeOf(i).Elem().Kind())
+}
+
+func TestNullify_Time(t *testing.T) {
+	// Arrange
+	var input time.Time
+
+	// Act
+	i := Nullify(input, NullifyMarshalJson{Value: false}, NullifyUnmarshalJson{Value: false})
+
+	// Assert
+	assert.Equal(t, reflect.Pointer, reflect.TypeOf(i).Kind())
+	assert.Equal(t, reflect.TypeOf(input), reflect.TypeOf(i).Elem())
 }
 
 func TestNullify_Default(t *testing.T) {
