@@ -132,7 +132,7 @@ type NullifyMarshalJson struct {
 }
 
 func (o NullifyMarshalJson) update(cfg config) config {
-	cfg.nullifyMapKey = o.Value
+	cfg.nullifyMarshalJson = o.Value
 	return cfg
 }
 
