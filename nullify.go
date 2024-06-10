@@ -55,8 +55,8 @@ var JsonOptions = []option{
 	NullifyMapElem{Value: false},
 	NullifySliceElem{Value: false},
 	NullifyArrayElem{Value: false},
-	NullifyMarshalJson{Value: true},
-	NullifyUnmarshalJson{Value: true},
+	NullifyMarshalJson{Value: false},
+	NullifyUnmarshalJson{Value: false},
 }
 
 // config determines the behavior of the ptr function
